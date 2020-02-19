@@ -34,7 +34,7 @@ conn.once('open', () => {
 // Create storage engine
 const storage = new GridFsStorage({
   url: mongoURI,
-  file: (req, file) => {s
+  file: (req, file) => {
     return new Promise((resolve, reject) => {
         const filename =file.originalname;
         const fileInfo = {
@@ -48,31 +48,6 @@ const storage = new GridFsStorage({
   }
 });
 const upload = multer({ storage });
-
-// @route GET /
-// @desc Loads form
-app.get('/', (req, res) => {
-  gfs.files.find().toArray((err, files) => {
-    // Check if files
-    if (!files || files.length === 0) {
-      res.render('index', { files: false });
-    } else {
-      files.map(file => {
-        if (
-          file.contentType === 'image/jpeg' ||
-          file.contentType === 'image/png'
-        ) {
-          file.isImage = true;
-        } else {
-          file.isImage = false;
-        }
-      });
-      //console.log(files);
-      res.render('index', { files: files });
-      
-    }
-  });
-});
 
 // @route POST /upload
 // @desc  Uploads file to DB
@@ -94,12 +69,10 @@ app.post('/upload', upload.single('file'), (req, res) => {
   console.log(fileurl);
   //res.json({ file: req.file });
   res.status(201).send({status:true, message : "file uploaded successfully", fileurl :fileurl});
-
-  //res.redirect('/');
 });
 
 // @route GET /files
-// @desc  Display all files in JSON
+// Display all files in JSON
 app.get('/files', (req, res) => {
   gfs.files.find().toArray((err, files) => {
     // Check if files
@@ -115,7 +88,7 @@ app.get('/files', (req, res) => {
 });
 
 // @route GET /files/:filename
-// @desc  Display single file object
+// Display single file object
 app.get('/files/:filename', (req, res) => {
   gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
     // Check if file
@@ -133,7 +106,7 @@ app.get('/files/:filename', (req, res) => {
 });
 
 // @route GET /image/:filename
-// @desc Display Image
+// Display Image
 app.get('/image/:filename', (req, res) => {
   gfs.files.findOne({ filename: req.params.filename }, (err, file) => {
     // Check if file
@@ -154,18 +127,6 @@ app.get('/image/:filename', (req, res) => {
         err: 'Not an image'
       });
     }
-  });
-});
-
-// @route DELETE /files/:id
-// @desc  Delete file
-app.delete('/files/:id', (req, res) => {
-  gfs.remove({ _id: req.params.id, root: 'uploads' }, (err, gridStore) => {
-    if (err) {
-      return res.status(404).json({ err: err });
-    }
-
-    res.redirect('/');
   });
 });
 
